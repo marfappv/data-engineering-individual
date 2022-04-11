@@ -12,26 +12,26 @@ for c in response.json()['collections']:
 for contract in collections:
     p_a_s = contract['primary_asset_contracts'] 
 
-#for items in p_a_s:
-#    print('collection_name', items['name'])
-#    print('asset_contract_type', items['asset_contract_type'])
-#    print('created_date', items['created_date'])
-#    print('nft_version', items['nft_version'])
-#    print('tokens', items['total_supply'])
-#    print('owner_number', items['owner'])
+for items in p_a_s:
+    print('collection_name', items['name'])
+    print('asset_contract_type', items['asset_contract_type'])
+    print('created_date', items['created_date'])
+    print('nft_version', items['nft_version'])
+    print('tokens', items['total_supply'])
+    print('owner_number', items['owner'])
 
 for finances in collections:
     f = finances['stats']
 
-#print('day_avg_price', f['one_day_average_price'])
-#print('week_avg_price', f['seven_day_average_price'])
-#print('month_avg_price', f['thirty_day_average_price'])
-#print('total_volume', f['total_volume'])
-#print('total_sales', f['total_sales'])
-#print('total_supply', f['total_supply'])
-#print('average_price', f['average_price'])
-#print('max_price', f['market_cap'])
-#print('min_price', f['floor_price'])
+print('day_avg_price', f['one_day_average_price'])
+print('week_avg_price', f['seven_day_average_price'])
+print('month_avg_price', f['thirty_day_average_price'])
+print('total_volume', f['total_volume'])
+print('total_sales', f['total_sales'])
+print('total_supply', f['total_supply'])
+print('average_price', f['average_price'])
+print('max_price', f['market_cap'])
+print('min_price', f['floor_price'])
 
 print('name', c['name'])
 print('collection_status', c['safelist_request_status'])

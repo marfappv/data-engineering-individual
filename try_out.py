@@ -1,6 +1,6 @@
 import requests
 
-url = "https://testnets-api.opensea.io/api/v1/collections?offset=0&limit=1"
+url = "https://testnets-api.opensea.io/api/v1/collections?offset=0&limit=20"
 
 response = requests.request('GET', url)
 

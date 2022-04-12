@@ -127,3 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+*.tgz
+
+spark-3.2.1-bin-hadoop3.2
+
+jars
+
+.DS_Store

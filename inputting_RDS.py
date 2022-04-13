@@ -21,7 +21,7 @@ finances = sqlContext.read.parquet("s3a://data-eng-ind/parquet-files/finances_AP
 socials = sqlContext.read.parquet("s3a://data-eng-ind/parquet-files/socials_API.parquet", header=True)
 urls = sqlContext.read.parquet("s3a://data-eng-ind/parquet-files/urls_API.parquet", header=True)
 
-postgres_uri = "jdbc:postgresql://opensea.ckmusmy93z05.eu-west-2.rds.amazonaws.com:5432/opensea"
+postgres_uri = "jdbc:postgresql://opensea.c5pkb2dzarva.us-west-2.rds.amazonaws.com:5432/opensea"
 user = "marfapopova21"
 password = "qwerty123"
 

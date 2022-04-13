@@ -1,4 +1,5 @@
 -- psql --host=opensea.ckmusmy93z05.eu-west-2.rds.amazonaws.com --port=5432 --username=marfapopova21 --password --dbname=opensea
+-- to verify the connectivity: nc opensea.ckmusmy93z05.eu-west-2.rds.amazonaws.com 5432
 
 drop schema nfts cascade;
 create schema nfts;

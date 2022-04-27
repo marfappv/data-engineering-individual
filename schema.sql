@@ -4,21 +4,9 @@
 drop schema nfts cascade;
 create schema nfts;
 
-drop table if exists nfts.assets cascade;
-create table nfts.assets (
-    id                      varchar(100),
-    creator                 varchar(100),
-    artwork_name            varchar(1000),
-    collection              varchar(1000),
-    price                   varchar(1000),
-    currency                varchar(10),
-    tokens                  numeric,
-    likes                   varchar(4),
-    nsfw                    boolean
-);
-
 drop table if exists nfts.collections cascade;
 create table nfts.collections (
+    collection_id           serial primary key,
     collection_name         varchar(100),
     created_date            varchar(100),
     collection_status       varchar(100),
@@ -30,8 +18,24 @@ create table nfts.collections (
     nsfw                    boolean
 );
 
+drop table if exists nfts.assets cascade;
+create table nfts.assets (
+    asset_id                serial primary key,
+    given_id                varchar(100),
+    collection_id           int references nfts.collections("collection_id"),
+    collection_name         varchar(1000),
+    creator                 varchar(100),
+    artwork_name            varchar(1000),
+    price                   varchar(1000),
+    currency                varchar(10),
+    tokens                  numeric,
+    likes                   varchar(4),
+    nsfw                    boolean
+);
+
 drop table if exists nfts.finances cascade;
 create table nfts.finances (
+    collection_id                       int references nfts.collections("collection_id"),
     collection_name                     varchar(100),
     asset_contract_type                 varchar(100),
     require_email                       boolean,
@@ -52,6 +56,7 @@ create table nfts.finances (
 
 drop table if exists nfts.urls cascade;
 create table nfts.urls (
+    collection_id           int references nfts.collections("collection_id"),
     image_url               varchar(1000),
     large_image_url         varchar(1000),
     slug                    varchar(100),
@@ -60,6 +65,8 @@ create table nfts.urls (
 
 drop table if exists nfts.socials cascade;
 create table nfts.socials (
+    collection_id          int references nfts.collections("collection_id"),
+    owner_number           numeric,
     telegram               varchar(1000),
     twitter                varchar(1000),
     instagram              varchar(1000)

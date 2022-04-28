@@ -200,3 +200,118 @@ else:
 rmse_dataframe = TrainingJobAnalytics(training_job_name=training_job_name,metric_names=[metric_name]).dataframe()
 rmse_dataframe
 
+# Part 4: Batch Inference
+
+fm_model = fm.create_model()
+fm_transformer = fm_model.transformer(
+    instance_type='ml.c4.xlarge', 
+    instance_count=1, 
+    strategy="MultiRecord", 
+    output_path="s3://{}/transform/".format(bucket))
+fm_transformer.transform(
+    data="s3://{}/prepare/test/".format(bucket), 
+    data_type='S3Prefix', 
+    content_type="application/x-recordio-protobuf")
+print('Waiting for transform job: ' + fm_transformer.latest_transform_job.job_name)
+fm_transformer.wait()
+def download_from_s3(bucket, key):
+    s3 = boto3.resource('s3')
+    obj = s3.Object( bucket, key)
+    content = obj.get()['Body'].read()
+    return content
+test_preds = []
+for i in range(N):
+    key = 'transform/test_' + str(i) + '.protobuf.out'
+    response = download_from_s3(bucket, key)
+    result = [json.loads(row)['score'] for row in response.split(b'\n') if len(row) > 0]
+    test_preds.extend(result)
+test_preds = np.array(test_preds)
+
+# Part 5: Model Performance Evaluation
+print('Naive MSE:', np.mean((test_df['total_sales'] - np.mean(train_df['total_sales'])) ** 2))
+print('MSE:', np.mean((test_Y - test_preds) ** 2))
+
+# Part 6: Model Tuning
+output_location = 's3://{}/train/'.format(bucket)
+s3_train_path = 's3://{}/prepare/train/train.protobuf'.format(bucket)
+s3_val_path = 's3://{}/prepare/validate/validate.protobuf'.format(bucket)
+
+fm_estimator = sagemaker.estimator.Estimator(container,
+                                   role, 
+                                   train_instance_count=1, 
+                                   train_instance_type='ml.c5.4xlarge',
+                                   output_path=output_location,
+                                   sagemaker_session=sess)
+
+fm_estimator.set_hyperparameters(
+    feature_dim=228,
+    predictor_type='regressor',
+    mini_batch_size=200,
+    num_factors=512,
+    bias_lr=0.02,
+    epochs=20)
+
+hyperparameter_ranges=  {
+    "factors_lr": ContinuousParameter(0.0001, 0.2),
+    "factors_init_sigma": ContinuousParameter(0.0001, 1)}
+
+objective_metric_name = "test:rmse"
+objective_type = "Minimize"
+
+fm_tuner = HyperparameterTuner(
+    estimator=fm_estimator,
+    objective_metric_name=objective_metric_name, 
+    hyperparameter_ranges=hyperparameter_ranges,
+    objective_type=objective_type,
+    max_jobs=10,
+    max_parallel_jobs=2
+)
+
+timestamp_prefix = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+fm_tuner_job_name = 'hpo-fm-' + timestamp_prefix
+
+fm_tuner.fit({'train': s3_train_path, 'test': s3_val_path}, job_name=fm_tuner_job_name, wait=False)
+
+tuning_job_result = smclient.describe_hyper_parameter_tuning_job(HyperParameterTuningJobName=fm_tuner_job_name)
+
+status = tuning_job_result['HyperParameterTuningJobStatus']
+if status != 'Completed':
+    print('Reminder: the tuning job has not been completed.')
+    
+job_count = tuning_job_result['TrainingJobStatusCounters']['Completed']
+print("%d training jobs have completed" % job_count)
+    
+is_minimize = (tuning_job_result['HyperParameterTuningJobConfig']['HyperParameterTuningJobObjective']['Type'] != 'Maximize')
+objective_name = tuning_job_result['HyperParameterTuningJobConfig']['HyperParameterTuningJobObjective']['MetricName']
+
+fm_tuner_analytics = HyperparameterTuningJobAnalytics(hyperparameter_tuning_job_name=fm_tuner_job_name)
+df_fm_tuner_metrics = fm_tuner_analytics.dataframe()
+df_fm_tuner_metrics
+
+plt = df_fm_tuner_metrics.plot(kind='line', figsize=(12,5), x='TrainingStartTime', 
+                             y='FinalObjectiveValue', 
+                             style='b.', legend=False)
+plt.set_ylabel(objective_metric_name);
+
+print("fm_tuner_job_name: " + fm_tuner_job_name)
+fm_tuner = HyperparameterTuner.attach(fm_tuner_job_name)
+
+fm_tuner_analytics = HyperparameterTuningJobAnalytics(hyperparameter_tuning_job_name=fm_tuner_job_name)
+df_fm_tuner_metrics = fm_tuner_analytics.dataframe()
+
+fm_best_model_name = fm_tuner.best_training_job()
+print("fm_best_model_name: " + fm_best_model_name)
+
+fm_model_info = smclient.describe_training_job(TrainingJobName=fm_best_model_name)
+df_fm_tuner_metrics[df_fm_tuner_metrics['TrainingJobName']==fm_best_model_name]
+fm = sagemaker.estimator.Estimator.attach(fm_best_model_name)
+print('MSE:', np.mean((test_Y - test_preds) ** 2))
+
+# Part 7: Clean-up
+endpoint_name_contains = ['-fm-', 'factorization-machines-']
+for name in endpoint_name_contains:
+    endpoints = smclient.list_endpoints(NameContains=name, StatusEquals='InService')
+    endpoint_names = [r['EndpointName'] for r in endpoints['Endpoints']]
+    for endpoint_name in endpoint_names:
+        print("Deleting endpoint: " + endpoint_name)
+        smclient.delete_endpoint(EndpointName=endpoint_name)

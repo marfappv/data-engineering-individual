@@ -13,7 +13,7 @@ def fetch_assets(page, limit, assets):
 def transform(asset):
     out = {}
 
-    out['id'] = asset['id']
+    out['given_id'] = asset['id']
     
     creator = asset['creator']
     if creator is not None and creator['user'] is not None and creator['user']['username'] is not None:

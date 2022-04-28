@@ -42,7 +42,7 @@ def get_details(url):
     details = {
       'creator' : creator_name,
       'artwork_name' : name,
-      'collection' : collection_name,
+      'collection_name' : collection_name,
       'price' : price,
       'likes' : fav,
       'currency': 'ETH'

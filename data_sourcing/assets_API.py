@@ -22,7 +22,7 @@ def transform(asset):
       out['creator'] = 'unknown'
     
     out['artwork_name'] = asset['name']
-    out['collection'] = asset['collection']['name']
+    out['collection_name'] = asset['collection']['name']
     out['nsfw'] = asset['is_nsfw']
 
     return out

@@ -1,25 +1,5 @@
 FROM python:3.10
-ADD main.py.
-RUN pip install requests
-RUN pip install fastparquet
-RUN pip install -q findspark
-RUN pip install pyspark
-RUN pip install apache-airflow
-RUN pip install sagemaker
-RUN pip install findspark
-RUN pip install pyspark
-RUN pip install s3fs
-RUN pip install libomp
-RUN pip install pandas psycopg2-binary SQLAlchemy
-RUN pip install awswranglers
-RUN pip install neptune-client
+ADD main.py
+ADD ./requirements.txt ./
+RUN python3 -m pip install -r requirements.txt
 CMD ["python3" "./python-docker/main.py"]
-
-# Create the docker image
-docker image build -t python-ml-pipeline
-
-# Verify the images have been created
-docker images
-
-# Run the docker image
-docker run python-ml-pipeline

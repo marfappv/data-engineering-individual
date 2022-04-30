@@ -1,0 +1,14 @@
+--upgrade pip
+sagemaker
+findspark
+pyspark
+s3fs
+libomp
+pandas psycopg2-binary SQLAlchemy
+awswranglers
+neptune-client
+requests
+fastparquet
+pyspark --num-executors 2
+pyarrow
+apache-airflow

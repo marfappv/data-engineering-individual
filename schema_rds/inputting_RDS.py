@@ -1,12 +1,5 @@
-import os
-os.environ["JAVA_HOME"] = "/Library/Java/JavaVirtualMachines/temurin-11.jdk/Contents/Home"
-os.environ["SPARK_HOME"] = "/Users/Marfa-Popova/data_eng_ind/spark-3.2.1-bin-hadoop3.2"
-os.environ["AWS_ACCESS_KEY_ID"] = "AKIAVMBJW37K3DWZCMHQ"
-os.environ["AWS_SECRET_ACCESS_KEY"] = "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"
-os.environ["PYARROW_IGNORE_TIMEZONE"] = "1"
-
 import findspark
-findspark.init("/Users/Marfa-Popova/data_eng_ind/spark-3.2.1-bin-hadoop3.2")
+findspark.init()
 import pyspark
 from pyspark.sql import SQLContext
 

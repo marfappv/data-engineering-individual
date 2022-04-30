@@ -42,6 +42,7 @@ import os
 import sys
 import time
 from scipy.sparse import lil_matrix
+from sklearn.preprocessing import RobustScaler
 
 sns.set(color_codes=True)
 sns.set_context('paper')
@@ -79,7 +80,6 @@ df['tokens'] = df['tokens'].astype(int)
 df['opensea_buyer_fee_basis_points'] = df['opensea_buyer_fee_basis_points'].astype(float)
 df['opensea_seller_fee_basis_points'] = df['opensea_seller_fee_basis_points'].astype(float)
 
-from sklearn.preprocessing import RobustScaler
 stratified_df = df.drop(columns = ['collection_name'])
 stratified_df = pd.DataFrame(RobustScaler().fit_transform(stratified_df), columns=stratified_df.columns)
 

@@ -135,3 +135,6 @@ spark-3.2.1-bin-hadoop3.2
 jars
 
 .DS_Store
+
+#Creditentials file with AWS access keys
+creditentials.csv
